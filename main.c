@@ -6,7 +6,7 @@
  * @av: arg vector
  * Return: 0 on success, 1 on error
  */
-int main() {
+int main(int argc, char *argv[]) {
   char *prompt = "$ ", *new_l = "\n";
   int ret = 0, retn;
   int *execution_return = &retn;
@@ -18,17 +18,11 @@ int main() {
     return (*execution_return);
   }
   while (1) {
-    bytes_written = write(STDOUT_FILENO, prompt, 2);
-    if (bytes_written == -1) {
-      perror("write error");
-    }
+    write(STDOUT_FILENO, prompt, 2);
     ret = process_args(execution_return);
     if (ret == END_FILE || ret == EXIT) {
       if (ret == END_FILE) {
-        bytes_written = write(STDOUT_FILENO, new_l, 1);
-        if (bytes_written == -1) {
-          perror("write error");
-        }
+        write(STDOUT_FILENO, new_l, 1);
       }
       exit(*execution_return);
     }

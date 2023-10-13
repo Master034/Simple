@@ -14,7 +14,7 @@ char *get_input(char *input, int *exe_ret) {
   if (input)
     free(input);
 
-  num_chars = getline(&input, &n, STDIN_FILENO);
+  num_chars = _getline(&input, &n, STDIN_FILENO);
   if (num_chars == -1)
     return (NULL);
   if (num_chars == 1) {
@@ -38,23 +38,32 @@ char *get_input(char *input, int *exe_ret) {
  * Return: If an end-of-file is read - END_FILE (-2).
  */
 int process_args(int *execution_return) {
-  int ret = 0;
-  char **args, *input = NULL, *read, **front;
+  int ret = 0, index;
+  char **args, *input = NULL, **front;
 
   input = get_input(input, execution_return);
   if (!input)
     return (END_FILE);
 
-  read = strtok(input, " ");
-  args = &read;
+  args = _strtok(input, " ");
+  free(input);
   if (!args)
     return (ret);
   front = args;
-  free(input);
+  for (index = 0; args[index]; index++)
+	{
+		if (strncmp(args[index], ";", 1) == 0)
+		{
+			free(args[index]);
+			args[index] = NULL;
+			ret = execute_args(args, front, execution_return);
+			args = &args[++index];
+			index = 0;
+		}
+	}
 
   if (args)
     ret = execute_args(args, front, execution_return);
-  free(read);
   return (ret);
 }
 
@@ -88,7 +97,7 @@ int execute(char **args, char **front __attribute__((unused))) {
   pid_t child_pid;
   int status, flag = 0, ret = 0;
   char *command = args[0];
-
+  
   child_pid = fork();
   if (child_pid == -1) {
     if (flag)
@@ -106,6 +115,7 @@ int execute(char **args, char **front __attribute__((unused))) {
     wait(&status);
     ret = WEXITSTATUS(status);
   }
+ 
   if (flag)
     free(command);
   return (ret);
